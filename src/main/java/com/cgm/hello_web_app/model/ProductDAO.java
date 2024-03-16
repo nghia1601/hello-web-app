@@ -34,10 +34,12 @@ public class ProductDAO {
 			list = new ArrayList<Product>();
 			while(rs.next()) {
 				int id = rs.getInt("id");
-				String name = rs.getString("name");
+				String title = rs.getString("title");
 				double price = rs.getDouble("price");
+				String description = rs.getString("description");
+				String category = rs.getString("category");
 				String image = rs.getString("image");
-				Product product = new Product(id, name, price, image);
+				Product product = new Product(id, title, price, description,category,  image);
 				list.add(product);
 			}
 			
@@ -79,11 +81,13 @@ public class ProductDAO {
 	        conn = DriverManager.getConnection(url, user, password);
 	        
 	        //2. Create SQL statement to add a new product
-	        sql = "INSERT INTO product (name, price, image) VALUES (?, ?, ?)";
+	        sql = "INSERT INTO product (title, price, description, category, image) VALUES (?, ?, ?, ?, ?)";
 	        pst = conn.prepareStatement(sql);
-	        pst.setString(1, product.getName());
+	        pst.setString(1, product.getTitle());
 	        pst.setDouble(2, product.getPrice());
-	        pst.setString(3, product.getImage());
+	        pst.setString(3, product.getDescription());
+	        pst.setString(4, product.getCategory());
+	        pst.setString(5, product.getImage());
 	        
 	        //3. Execute SQL statement
 	        int rowsAffected = pst.executeUpdate();
@@ -160,12 +164,14 @@ public class ProductDAO {
 	        conn = DriverManager.getConnection(url, user, password);
 
 	        // SQL để cập nhật thông tin sản phẩm
-	        sql = "UPDATE product SET name=?, price=?, image=? WHERE id=?";
+	        sql = "UPDATE product SET title=?, price=?, description=?, category=?, image=? WHERE id=?";
 	        pst = conn.prepareStatement(sql);
-	        pst.setString(1, product.getName());
+	        pst.setString(1, product.getTitle());
 	        pst.setDouble(2, product.getPrice());
-	        pst.setString(3, product.getImage());
-	        pst.setInt(4, product.getId());
+	        pst.setString(3, product.getDescription());
+	        pst.setString(4, product.getCategory());
+	        pst.setString(5, product.getImage());
+	        pst.setInt(6, product.getId());
 
 	        // Thực thi câu lệnh SQL
 	        int rowsAffected = pst.executeUpdate();
@@ -183,6 +189,56 @@ public class ProductDAO {
 	            e.printStackTrace();
 	        }
 	    }
+	}
+
+	
+	// find product by id
+	
+	public boolean getProductById(int id, Product product) {
+	    String url, user, password;
+	    Connection conn = null;
+	    PreparedStatement pst = null;
+	    String sql;
+	    ResultSet rs = null;
+	    boolean found = false;
+
+	    try {
+	        Class.forName("com.mysql.cj.jdbc.Driver");
+	        url = "jdbc:mysql://localhost:3306/product_mobleadvanced";
+	        user = "root";
+	        password = "0000";
+	        conn = DriverManager.getConnection(url, user, password);
+	        sql = "SELECT * FROM product WHERE id=?";
+	        pst = conn.prepareStatement(sql);
+	        pst.setInt(1, id);
+	        rs = pst.executeQuery();
+	        
+	        if (rs.next()) {
+	            String title = rs.getString("title");
+	            double price = rs.getDouble("price");
+	            String description = rs.getString("description");
+	            String category = rs.getString("category");
+	            String image = rs.getString("image");
+	            product.setId(id);
+	            product.setTitle(title);
+	            product.setPrice(price);
+	            product.setDescription(description);
+	            product.setCategory(category);
+	            product.setImage(image);
+	            found = true;
+	        }
+	    } catch (ClassNotFoundException | SQLException e) {
+	        e.printStackTrace();
+	    } finally {
+	        try {
+	            if (rs != null) rs.close();
+	            if (pst != null) pst.close();
+	            if (conn != null) conn.close();
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	    return found;
 	}
 
 	
